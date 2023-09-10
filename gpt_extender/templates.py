@@ -16,4 +16,5 @@ class ExtendTemplate:
         self.extra_args = kwargs
 
     def prompt(self, text: str) -> str:
-        return self.task + " " + "something" + " " + self.output + "\n" + text
+        end_msg = "Analyze this text:"
+        return self.task + " " + self.output + end_msg + "\n" + text

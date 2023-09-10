@@ -4,11 +4,11 @@ import openai
 from openai.openai_object import OpenAIObject
 from typing import Union, Literal
 
-from template import ExtendTemplate
+from .templates import ExtendTemplate
 
 
 class DataExtender:
-    openai_key = os.environ.get("KEY")
+    openai_key = os.environ.get("OPENAI_API_KEY")
 
     def __init__(self, 
                  df: pd.DataFrame, 
