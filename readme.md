@@ -40,10 +40,4 @@ This project is currently in its early stages, and contributions or suggestions 
 
 Please feel free to fork this repository, create a feature branch, and submit a Pull Request. For any bugs, questions, or suggestions, open an issue.
 
-## License
 
-This project is licensed under the MIT License. See the [LICENSE.md](LICENSE.md) file for details.
-
----
-
-For more information, please refer to the documentation, which will be continually updated as the project progresses.
