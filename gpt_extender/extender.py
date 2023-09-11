@@ -160,8 +160,17 @@ class DataExtender:
                                   )
         
         return self.chat_extend(template=template)
+    
+    def usage_summary(self, cost_1k_tokens=0.002) -> dict[str: int]:
+        usage_dict = {
+            "prompt_tokens": self.prompt_tokens,
+            "completion_tokens": self.completion_tokens,
+            "total_tokens": self.prompt_tokens + self.completion_tokens,
+            "estimated_cost": (self.prompt_tokens + self.completion_tokens)/1000*cost_1k_tokens
+        }
+        return usage_dict
 
-    def _validate_column_name(self, name):
+    def _validate_column_name(self, name) -> None:
         if name not in self.df.columns:
             raise NameError(f"Column name: {name} is not part of the instance DataFrame.")
 
