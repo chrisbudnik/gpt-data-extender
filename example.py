@@ -37,4 +37,6 @@ extender.add_translation(column_name="reviews", language="polish")
 # topic recognition
 extender.add_topic(column_name="reviews", new_column_name="category", outputs=["product", "service", "other"])
 
-print(extender.df)
+print(extender.df, "\n")
+
+print(extender.usage_summary())
