@@ -22,16 +22,16 @@ class DataExtender:
         self.embeddings_model = embeddings_model
 
         self.prompt_tokens = 0
-        self.completiton_tokens = 0
+        self.completion_tokens = 0
 
     @staticmethod
     def _process_chat_response(res: OpenAIObject) -> str:
         response_dict = res.to_dict_recursive()
         return response_dict.get("choices", {})[0].get("message", {}).get("content", None)
 
-    @staticmethod
-    def _update_token_usage(res: OpenAIObject) -> None:
-        pass
+    def _update_token_usage(self, res: OpenAIObject) -> None:
+        self.prompt_tokens += res.get("usage", {}).get("prompt_tokens", 0)
+        self.completion_tokens += res.get("usage", {}).get("completion_tokens", 0)
     
     def chat_extend(self, template: ExtendTemplate) -> pd.DataFrame:
         generated_data = []
@@ -47,7 +47,7 @@ class DataExtender:
             ],
             **template.extra_args
             )
-
+            self._update_token_usage(response)
             prompt_result = self._process_chat_response(response)
             generated_data.append(prompt_result)
 
@@ -66,7 +66,7 @@ class DataExtender:
                 prompt=prompt,
                 **template.extra_args  
             )
-
+            self._update_token_usage(response)
             generated_text = response.choices[0].text.strip()
             generated_data.append(generated_text)
 
@@ -90,6 +90,7 @@ class DataExtender:
                                                  output_size=output_size),
                 **template.extra_args  
             )
+        self._update_token_usage(response)
         new_records = response.choices[0].text.strip()
         new_records_df = pd.DataFrame({template.column_name: new_records.split("\n")})
         
