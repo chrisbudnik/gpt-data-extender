@@ -8,11 +8,10 @@ from .templates import ExtendTemplate
 
 
 class DataExtender:
-    openai.api_key = os.environ.get("OPENAI_API_KEY")
 
     def __init__(self, 
                  df: pd.DataFrame, 
-                 gpt_model: str = "text-davinci-002",
+                 gpt_model: str = "text-davinci-003",
                  chat_model: str = "gpt-3.5-turbo",
                  embeddings_model: str = "text-embedding-ada-002"
                  ) -> None:
@@ -54,9 +53,10 @@ class DataExtender:
         for index, row in self.df.iterrows():
             data = row[template.column_name]
 
+            prompt = template.context + template.prompt(data)
             response = openai.Completion.create(
                 engine=self.gpt_model,
-                prompt=data,
+                prompt=prompt,
                 **template.extra_args  
             )
 
@@ -65,6 +65,38 @@ class DataExtender:
 
         self.df[template.new_column_name] = generated_data
         return self.df
+    
+    def synthetic_extend(self, 
+                         template: ExtendTemplate, 
+                         output_size: int = 5, 
+                         sample_size: int = 5, 
+                         inplace: bool = True,
+                         flag_synthetic_data: bool = False
+                         ) -> pd.DataFrame:
+
+        sample = self.df[template.column_name].sample(sample_size)
+        sample_records = "\n".join(sample)
+        
+        response = openai.Completion.create(
+                engine=self.gpt_model,
+                prompt=template.prompt_synthetic(text=sample_records, 
+                                                 output_size=output_size),
+                **template.extra_args  
+            )
+        new_records = response.choices[0].text.strip()
+        new_records_df = pd.DataFrame({template.column_name: new_records.split("\n")})
+        
+        # create a flag: is_synthetic 
+        if flag_synthetic_data:
+            self.df["is_synthetic"] = False
+            new_records_df["is_synthetic"] = True
+
+        # apply extension to instance DataFrame
+        if inplace:
+            self.df = pd.concat([self.df, new_records_df], ignore_index=True)
+        
+        return pd.concat([self.df, new_records_df], ignore_index=True)
+            
     
     def add_embeddings(self, column_name: str):
         pass
@@ -108,5 +140,22 @@ class DataExtender:
                                   temperature=0 # Low temperature decreases creativity thus increasing predictibility 
                                   )
         return self.chat_extend(template=template)
+    
+    def add_synthetic_data(self, column_name: str):
+
+        # sampling
+        template = ExtendTemplate(column_name=column_name,
+                                  new_column_name="",
+                                  context="You are an expert data specialist capable of understanding and learing patterns from data.",
+                                  task=f"Based on provided sample of text inputs, learn the patterns and context. Then generate synthetic ones that may well be part of sample.",
+                                  output=f"Format your output so it as closely resembles formatting and style of initial inputs. New records separate with new line.",
+                                  )
+        
+        return self.chat_extend(template=template)
+
+    def _validate_column_name(self, name):
+        if name not in self.df.columns:
+            raise NameError(f"Column name: {name} is not part of the instance DataFrame.")
+
 
 
