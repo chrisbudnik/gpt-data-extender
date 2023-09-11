@@ -16,5 +16,10 @@ class ExtendTemplate:
         self.extra_args = kwargs
 
     def prompt(self, text: str) -> str:
-        end_msg = "Analyze this text:"
-        return self.task + " " + self.output + end_msg + "\n" + text
+        msg_ending = "Analyze this text:"
+        return self.task + " " + self.output + msg_ending + "\n" + text
+    
+    def prompt_synthetic(self, text: str, output_size: int) -> str:
+        msg_ending = "Based on the following text, provide {output_size} examples:"
+        msg_order = [self.context, self.task, self.output, msg_ending.format(output_size), text]
+        return  "\n".join(msg_order)
