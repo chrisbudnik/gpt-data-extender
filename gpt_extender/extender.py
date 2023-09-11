@@ -110,7 +110,6 @@ class DataExtender:
         pass
 
     def add_sentiment(self, column_name: str, new_column_name: str, outputs: list[str]):
-
         template = ExtendTemplate(column_name=column_name,
                                   new_column_name=new_column_name,
                                   context="You are a specialist in text sentiment recognition.",
@@ -149,17 +148,14 @@ class DataExtender:
                                   )
         return self.chat_extend(template=template)
     
-    def add_synthetic_data(self, column_name: str):
-
-        # sampling
+    def add_synthetic_data(self, column_name: str, **kwargs):
         template = ExtendTemplate(column_name=column_name,
                                   new_column_name="",
                                   context="You are an expert data specialist capable of understanding and learing patterns from data.",
                                   task=f"Based on provided sample of text inputs, learn the patterns and context. Then generate synthetic ones that may well be part of sample.",
                                   output=f"Format your output so it as closely resembles formatting and style of initial inputs. New records separate with new line.",
                                   )
-        
-        return self.chat_extend(template=template)
+        return self.synthetic_extend(template=template, **kwargs)
     
     def usage_summary(self, cost_1k_tokens=0.002) -> dict[str: int]:
         usage_dict = {
