@@ -21,10 +21,17 @@ class DataExtender:
         self.chat_model = chat_model
         self.embeddings_model = embeddings_model
 
+        self.prompt_tokens = 0
+        self.completiton_tokens = 0
+
     @staticmethod
     def _process_chat_response(res: OpenAIObject) -> str:
         response_dict = res.to_dict_recursive()
         return response_dict.get("choices", {})[0].get("message", {}).get("content", None)
+
+    @staticmethod
+    def _update_token_usage(res: OpenAIObject) -> None:
+        pass
     
     def chat_extend(self, template: ExtendTemplate) -> pd.DataFrame:
         generated_data = []
