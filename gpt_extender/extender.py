@@ -24,6 +24,27 @@ class DataExtender:
         self.prompt_tokens = 0
         self.completion_tokens = 0
 
+    def _chat_completion(self, context: str, prompt: str, **kwargs):
+        response = openai.ChatCompletion.create(
+            model=self.chat_model,
+            messages=[
+                {"role": "system", "content": context},
+                {"role": "user", "content": prompt},
+            ],
+            **kwargs
+            )
+        self._update_token_usage(response)
+        return self._process_chat_response(response)
+
+    def _gpt_completion(self, prompt: str, **kwargs):
+        response = openai.Completion.create(
+            engine=self.gpt_model,
+            prompt=prompt,
+            **kwargs 
+        )
+        self._update_token_usage(response)
+        return response.choices[0].text.strip()
+
     @staticmethod
     def _process_chat_response(res: OpenAIObject) -> str:
         response_dict = res.to_dict_recursive()
