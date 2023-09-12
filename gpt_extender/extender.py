@@ -32,6 +32,10 @@ class DataExtender:
     def _update_token_usage(self, res: OpenAIObject) -> None:
         self.prompt_tokens += res.get("usage", {}).get("prompt_tokens", 0)
         self.completion_tokens += res.get("usage", {}).get("completion_tokens", 0)
+
+    def sample_to_text(self, column_name: str, sample_size: int = 5) -> str:
+        sample = self.df[column_name].sample(sample_size)
+        return "\n".join(sample)
     
     def chat_extend(self, template: ExtendTemplate) -> pd.DataFrame:
         generated_data = []
@@ -107,9 +111,18 @@ class DataExtender:
             self.df = extended_df
         return extended_df
     
-    def sample_to_text(self, column_name: str, sample_size: int = 5) -> str:
-        sample = self.df[column_name].sample(sample_size)
-        return "\n".join(sample)
+    def ai_analyze(self, column_name: str, **kwargs) -> None:
+        sample = self.sample_to_text(column_name, **kwargs)
+        template = ExtendTemplate(column_name=column_name,
+                                  new_column_name="",
+                                  context="You are a specialist in data analysis. Given text sample you learn its patterns and context.",
+                                  task="""Propose new columns or measures to help better understand the provided text, 
+                                  try diverse feature enginnering like: boolen/categorical columns.""",
+                                  output="Format response a list of ideas, include explenation on how new features may be beneficial.",
+                                  temperature=0.7 # increased creativity
+                                  )
+        return self.chat_extend(template=template)
+
     
     def add_embeddings(self, column_name: str):
         pass
