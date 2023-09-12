@@ -81,9 +81,11 @@ class DataExtender:
                          flag_synthetic_data: bool = False
                          ) -> pd.DataFrame:
 
-        sample = self.df[template.column_name].sample(sample_size)
-        sample_records = "\n".join(sample)
+        sample_records = self.sample_to_text(template.column_name, sample_size)
         
+        if len(self.df.columns) > 1:
+            raise NotImplementedError("synthetic_extend method currently does not support multi-dimensional data.")
+
         response = openai.Completion.create(
                 engine=self.gpt_model,
                 prompt=template.prompt_synthetic(text=sample_records, 
@@ -100,16 +102,20 @@ class DataExtender:
             new_records_df["is_synthetic"] = True
 
         # apply extension to instance DataFrame
+        extended_df = pd.concat([self.df, new_records_df], ignore_index=True)
         if inplace:
-            self.df = pd.concat([self.df, new_records_df], ignore_index=True)
-        
-        return pd.concat([self.df, new_records_df], ignore_index=True)
-            
+            self.df = extended_df
+        return extended_df
+    
+    def sample_to_text(self, column_name: str, sample_size: int = 5) -> str:
+        sample = self.df[column_name].sample(sample_size)
+        return "\n".join(sample)
     
     def add_embeddings(self, column_name: str):
         pass
 
     def add_sentiment(self, column_name: str, new_column_name: str, outputs: list[str]):
+
         template = ExtendTemplate(column_name=column_name,
                                   new_column_name=new_column_name,
                                   context="You are a specialist in text sentiment recognition.",
