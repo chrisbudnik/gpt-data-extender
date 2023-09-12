@@ -111,19 +111,6 @@ class DataExtender:
             self.df = extended_df
         return extended_df
     
-    def ai_analyze(self, column_name: str, **kwargs) -> None:
-        sample = self.sample_to_text(column_name, **kwargs)
-        template = ExtendTemplate(column_name=column_name,
-                                  new_column_name="",
-                                  context="You are a specialist in data analysis. Given text sample you learn its patterns and context.",
-                                  task="""Propose new columns or measures to help better understand the provided text, 
-                                  try diverse feature enginnering like: boolen/categorical columns.""",
-                                  output="Format response a list of ideas, include explenation on how new features may be beneficial.",
-                                  temperature=0.7 # increased creativity
-                                  )
-        return self.chat_extend(template=template)
-
-    
     def add_embeddings(self, column_name: str):
         pass
 
@@ -184,6 +171,29 @@ class DataExtender:
             "estimated_cost": (self.prompt_tokens + self.completion_tokens)/1000*cost_1k_tokens
         }
         return usage_dict
+    
+    def ai_analyze(self, column_name: str, **kwargs) -> None:
+        sample = self.sample_to_text(column_name, **kwargs)
+        template = ExtendTemplate(column_name=column_name,
+                                  new_column_name="",
+                                  context="You are a specialist in data analysis. Given text sample you learn its patterns and context.",
+                                  task="""Propose new columns or measures to help better understand the provided text, 
+                                  try diverse feature enginnering like: boolen/categorical columns.""",
+                                  output="Format response a list of ideas, include explenation on how new features may be beneficial.",
+                                  temperature=0.7 # increased creativity
+                                  )
+        
+        response = openai.ChatCompletion.create(
+            model=self.chat_model,
+            messages=[
+                {"role": "system", "content": template.context},
+                {"role": "user", "content": template.prompt(sample)},
+            ],
+            **template.extra_args
+        )
+        self._update_token_usage(response)
+        prompt_result = self._process_chat_response(response)
+        print(prompt_result)
 
     def _validate_column_name(self, name) -> None:
         if name not in self.df.columns:
