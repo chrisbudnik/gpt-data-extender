@@ -20,7 +20,7 @@ class DataExtender:
         self.gpt_model = gpt_model
         self.chat_model = chat_model
         self.embeddings_model = embeddings_model
-
+        
         self.prompt_tokens = 0
         self.completion_tokens = 0
 
@@ -60,20 +60,9 @@ class DataExtender:
     
     def chat_extend(self, template: ExtendTemplate) -> pd.DataFrame:
         generated_data = []
-
         for index, row in self.df.iterrows():
             data = row[template.column_name] 
-            
-            response = openai.ChatCompletion.create(
-            model=self.chat_model,
-            messages=[
-                {"role": "system", "content": template.context},
-                {"role": "user", "content": template.prompt(data)},
-            ],
-            **template.extra_args
-            )
-            self._update_token_usage(response)
-            prompt_result = self._process_chat_response(response)
+            prompt_result = self._chat_completion(template.context, template.prompt(data), **template.extra_args)
             generated_data.append(prompt_result)
 
         self.df[template.new_column_name] = generated_data
@@ -84,15 +73,8 @@ class DataExtender:
 
         for index, row in self.df.iterrows():
             data = row[template.column_name]
-
             prompt = template.context + template.prompt(data)
-            response = openai.Completion.create(
-                engine=self.gpt_model,
-                prompt=prompt,
-                **template.extra_args  
-            )
-            self._update_token_usage(response)
-            generated_text = response.choices[0].text.strip()
+            generated_text = self._gpt_completion(prompt, **template.extra_args)
             generated_data.append(generated_text)
 
         self.df[template.new_column_name] = generated_data
@@ -110,15 +92,9 @@ class DataExtender:
         
         if len(self.df.columns) > 1:
             raise NotImplementedError("synthetic_extend method currently does not support multi-dimensional data.")
-
-        response = openai.Completion.create(
-                engine=self.gpt_model,
-                prompt=template.prompt_synthetic(text=sample_records, 
-                                                 output_size=output_size),
-                **template.extra_args  
-            )
-        self._update_token_usage(response)
-        new_records = response.choices[0].text.strip()
+        
+        prompt = template.prompt_synthetic(text=sample_records, output_size=output_size)
+        new_records = self._gpt_completion(prompt, **template.extra_args)
         new_records_df = pd.DataFrame({template.column_name: new_records.split("\n")})
         
         # create a flag: is_synthetic 
@@ -189,7 +165,7 @@ class DataExtender:
             "prompt_tokens": self.prompt_tokens,
             "completion_tokens": self.completion_tokens,
             "total_tokens": self.prompt_tokens + self.completion_tokens,
-            "estimated_cost": (self.prompt_tokens + self.completion_tokens)/1000*cost_1k_tokens
+            "estimated_cost": round((self.prompt_tokens + self.completion_tokens)/1000*cost_1k_tokens, 4)
         }
         return usage_dict
     
@@ -204,21 +180,8 @@ class DataExtender:
                                   temperature=0.7 # increased creativity
                                   )
         
-        response = openai.ChatCompletion.create(
-            model=self.chat_model,
-            messages=[
-                {"role": "system", "content": template.context},
-                {"role": "user", "content": template.prompt(sample)},
-            ],
-            **template.extra_args
-        )
-        self._update_token_usage(response)
-        prompt_result = self._process_chat_response(response)
+        prompt_result = self._chat_completion(template.context, template.prompt(sample), **template.extra_args)
         print(prompt_result)
-
-    def _validate_column_name(self, name) -> None:
-        if name not in self.df.columns:
-            raise NameError(f"Column name: {name} is not part of the instance DataFrame.")
 
 
 
