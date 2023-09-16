@@ -1,11 +1,11 @@
 import pandas as pd
+import numpy as np
 import os
 import openai
 from openai.openai_object import OpenAIObject
 from typing import Union, Literal
 
 from .templates import ExtendTemplate
-
 
 class DataExtender:
     """Extends a given DataFrame using various AI-powered methods."""
@@ -26,7 +26,7 @@ class DataExtender:
         self.prompt_tokens = 0
         self.completion_tokens = 0
 
-    def _chat_completion(self, context: str, prompt: str, **kwargs):
+    def _chat_completion(self, context: str, prompt: str, **kwargs) -> str:
         """Get completion for chat-based models."""
 
         response = openai.ChatCompletion.create(
@@ -40,7 +40,7 @@ class DataExtender:
         self._update_token_usage(response)
         return self._process_chat_response(response)
 
-    def _gpt_completion(self, prompt: str, **kwargs):
+    def _gpt_completion(self, prompt: str, **kwargs) -> str:
         """Get completion for GPT-based models."""
 
         response = openai.Completion.create(
@@ -50,7 +50,15 @@ class DataExtender:
         )
         self._update_token_usage(response)
         return response.choices[0].text.strip()
-
+    
+    def _embedding_completion(self, input: str) -> list:
+        response = openai.Embedding.create(
+            input=input,
+            model=self.embeddings_model
+        )
+        self._update_token_usage(response)
+        return response['data'][0]['embedding']
+    
     @staticmethod
     def _process_chat_response(res: OpenAIObject) -> str:
         """Process and extract content from chat response."""
@@ -74,7 +82,7 @@ class DataExtender:
         """Extend DataFrame using a chat-based model."""
 
         generated_data = []
-        for index, row in self.df.iterrows():
+        for _, row in self.df.iterrows():
             data = row[template.column_name] 
             prompt_result = self._chat_completion(template.context, template.prompt(data), **template.extra_args)
             generated_data.append(prompt_result)
@@ -87,7 +95,7 @@ class DataExtender:
 
         generated_data = []
 
-        for index, row in self.df.iterrows():
+        for _, row in self.df.iterrows():
             data = row[template.column_name]
             prompt = template.context + template.prompt(data)
             generated_text = self._gpt_completion(prompt, **template.extra_args)
@@ -104,7 +112,6 @@ class DataExtender:
                          flag_synthetic_data: bool = False
                          ) -> pd.DataFrame:
         """Generate and extend DataFrame with synthetic data."""
-
 
         sample_records = self.sample_to_text(template.column_name, sample_size)
         
@@ -126,14 +133,20 @@ class DataExtender:
             self.df = extended_df
         return extended_df
     
-    def add_embeddings(self, column_name: str):
+    def add_embeddings(self, column_name: str) -> pd.DataFrame:
         """Add embeddings for a specific DataFrame column."""
+        new_column_name = column_name + "_embedding"
 
-        pass
+        # Transformation takens from openai official docs 
+        # Link: https://platform.openai.com/docs/guides/embeddings/use-cases?lang=python
+        self.df[new_column_name] = self.df[column_name].apply(lambda x: self._embedding_completion(x)) 
+        self.df[new_column_name] = self.df[new_column_name].apply(np.array)
+        
+        return self.df
+
 
     def add_sentiment(self, column_name: str, new_column_name: str, outputs: list[str]):
         """Add sentiment analysis to a specific DataFrame column."""
-
 
         template = ExtendTemplate(column_name=column_name,
                                   new_column_name=new_column_name,
@@ -190,6 +203,31 @@ class DataExtender:
                                   )
         return self.synthetic_extend(template=template, **kwargs)
     
+    @ staticmethod
+    def _cosine_similarity(a, b):
+        """Calculate cosine similarity, based on openai.embedding_utils cosine_similarity() function."""
+        return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
+    
+    def search_similarity(self, embedding_column: str, query: str, n_best_results: int = 3) -> pd.DataFrame:
+        """Perform a vector similarity search based on query and embedding column."""
+
+        # Raise ValueError if embedding_colum type is 
+        if False:
+            raise ValueError("Similarity search can only be performed on embedding columns")
+        
+        # Copy DataFrame to idependance 
+        df = self.df.copy()
+    
+        # Transform search query into embedding
+        query_embedding = self._embedding_completion(query)
+
+        # Apply similarity search with openai cosine_similarity function
+        df['similarities'] = df[embedding_column].apply(lambda x: self._cosine_similarity(x, query_embedding))
+
+        # Sort results by similarity, show only n_best_results
+        result = df.sort_values('similarities', ascending=False).head(n_best_results)
+        return result
+        
     def usage_summary(self, cost_1k_tokens=0.002) -> dict[str: int]:
         """Get summary of API token usage and estimated cost."""
 
