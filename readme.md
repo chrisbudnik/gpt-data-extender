@@ -21,6 +21,8 @@ Easily generate new columns in your dataset based on custom AI prompts. For inst
 
 GPT-Data-Extender supports a host of NLP tasks like:
 
+- Generate ai suggestions for data extension
+- Apply embeddings and perform similarity search
 - Topic Detection
 - Sentiment Classification
 - Summarization
@@ -28,6 +30,7 @@ GPT-Data-Extender supports a host of NLP tasks like:
 
 ### Adding synthetic data
 The add_synthetic_data method first samples existing rows from the specified text column, which then guide the OpenAI model in generating new, contextually relevant entries. These synthetic records are added back to the original DataFrame, enriching it effectively.
+
 
 ## How it works?
 
@@ -67,9 +70,7 @@ extender.add_synthetic_data(column_name="reviews", output_size=30)
 Utilize the `add_topic` method to categorize the text in your DataFrame. The method adds a new column that labels each text entry based on specified topics. In this example, we add a new column named "category" that categorizes the reviews into "product", "service", or "other"
 
 ```python
-extender.add_topic(column_name="reviews", 
-                   new_column_name="category", 
-                   outputs=["product", "service", "other"])
+extender.add_topic(column_name="reviews", new_column_name="category", outputs=["product", "service", "other"])
 ```
 
 ## Implementing Custom Extensions
@@ -85,10 +86,42 @@ template = ExtendTemplate(column_name="reviews",
 extender.chat_extend(template=template)
 ```
 
+## Adding Embeddings and Similarity Search
+
+Add text embeddings to your DataFrame and then perform a similarity search based on a query string.
+
+```python
+# Add embeddings to the 'reviews' column
+extender.add_embeddings(column_name="reviews")
+
+# Perform a similarity search using cosine similarity
+search_results: pd.DataFrame = extender.search_similarity(embedding_column="reviews_embedding", 
+                                                          query="There was a problem with service.", 
+                                                          n_best_results=5)
+search_results.head()
+```
+
+## Token Usage Summary
+
+Check the summary of token usage for the API calls made by the DataExtender class.
+
+```python
+# Get a summary of token usage
+extender.usage_summary()
+```
+
+## AI-Based Data Extension Suggestions
+
+Leverage the AI model to suggest potential ways you could extend your DataFrame.
+
+```python
+# Suggest potential extensions for the 'reviews' column
+extender.ai_analyze(column_name="reviews")
+```
+
 ## Repo Structure
 
 - `gpt_extender/`: This folder contains all the source code.
-  - Files for DataExtender class, ExtendTemplate class, etc.
 - `example.py`: A script that demonstrates the use-cases and how to interact with the functionalities.
 - `requirements.txt`: The file contains all the dependencies needed to run the code.
 
