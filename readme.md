@@ -46,6 +46,9 @@ The `DataExtender` class is the workhorse for extending the DataFrame. The class
 
 The `ExtendTemplate` class allows users to customize the prompts for extension methods. By defining the details of a prompt, you can then use the `build` method to construct a query that the `DataExtender` methods can use to process the DataFrame.
 
+### Architecture
+For more detailed and design focused overview please check technical docs: [technical-readme](gpt_extender/readme.md)
+
 # Functionality Walkthrough
 
 ## Importing Libraries and Initialize DataExtender
