@@ -15,6 +15,8 @@ reviews_list = [
 # Creating the DataFrame
 df = pd.DataFrame({'reviews': reviews_list})
 
+df = pd.read_csv("revievs.csv")
+
 # Displaying the DataFrame
 print(df)
 
