@@ -127,7 +127,7 @@ extender.ai_analyze(column_name="reviews")
 - `gpt_extender/`: This folder contains all the source code.
 - `example.py`: A script that demonstrates the use-cases and how to interact with the functionalities.
 - `requirements.txt`: The file contains all the dependencies needed to run the code.
-- `walkthroug.py`: A script that includes walkthrough code.
+- `walkthrough.py`: A script that includes walkthrough code.
 
 ## :floppy_disk: Installation
 
