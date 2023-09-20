@@ -1,30 +1,30 @@
-# GPT-Extender Architecture Overview
+# :gear: GPT-Extender Architecture Overview
 
-## Overview
+## :mag: Overview
 
 The `gpt_extender` module is structured to facilitate easy data augmentation and feature extraction from textual data. It comprises several layers: helper methods for direct API interactions, backbone methods for core functionalities, and a specialized class for managing prompt engineering.
 
 
-## Helper Methods
+## :wrench: Helper Methods
 
 ### `_chat_completion` & `_gpt_completion`
 
 These methods serve as the primary interface with the OpenAI API. They handle the execution of the language model queries and receive the output. Additionally, these methods are responsible for monitoring token usage via the internal method `_update_token_usage`, ensuring that you keep track of your API usage.
 
-## Backbone Methods
+## :spinear: Backbone Methods
 
 ### `gpt_extend` & `chat_extend`
 
 These methods are the core of the module, responsible for applying machine learning understanding to textual data within the DataFrame. They iterate over each row and, based on the specific task, apply either the GPT or chat model to extend the DataFrame horizontally by adding new columns. These methods often use `ExtendTemplate` instances to customize the AI prompts for specific tasks.
 
 
-## Prompt Engineering
+## :bulb: Prompt Engineering
 
 ### `ExtendTemplate` Class
 
 The `ExtendTemplate` class serves as a utility for shaping the AI prompts used in the backbone methods. It holds crucial information such as the names of the columns to be processed, the context for the AI task, and the required format for the output. This class makes it easier to create customized, reusable prompts for different DataFrame extension tasks.
 
-## High-Level Methods
+## :rocket: High-Level Methods
 
 ### `add_topic`, `add_sentiment`, etc.
 
@@ -46,7 +46,7 @@ def add_topic(self, column_name: str, new_column_name: str, outputs: list[str]):
 By understanding this modular architecture, you can more effectively extend or adapt the functionalities of `gpt_extender` for your unique use-cases.
 
 
-## `DataExtender`` Class: Method List
+## :clipboard: `DataExtender`` Class: Method List
 
 | Method Name      | Short Description                                                                                          |
 |------------------|-----------------------------------------------------------------------------------------------------------|
