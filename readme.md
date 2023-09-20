@@ -1,6 +1,6 @@
 # GPT-Data-Extender
 
-## Overview
+## :mag_right: Overview
 
 GPT-Data-Extender is a Python library designed to aid data scientists and analysts in enriching their datasets with the help of AI-generated content. This tool leverages state-of-the-art language models to automate a range of Natural Language Processing (NLP) tasks, saving time and increasing efficiency.
 
@@ -143,3 +143,50 @@ For a full example, check out `example.py`.
 ## Project Status
 
 This project is currently in its early stages, and contributions or suggestions for improvement are highly welcomed.
+
+
+# :books: GPT-Data-Extender
+
+##  Overview
+
+## :bulb: Use Case
+
+## :star: Main Features
+
+### :page_facing_up: Column Extension
+
+### :robot: NLP Tasks Automation
+
+### :loop: Adding synthetic data
+
+## :hammer_and_wrench: How it works?
+
+### :gear: DataExtender Class
+
+### :memo: ExtendTemplate Class
+
+### :building_construction: Architecture
+
+# :film_projector: Functionality Walkthrough
+
+## :arrow_down_small: Importing Libraries and Initialize DataExtender
+
+## :heavy_plus_sign: Adding Synthetic Data
+
+## :label: Performing Topic Recognition
+
+## :wrench: Implementing Custom Extensions
+
+## :link: Adding Embeddings and Similarity Search
+
+## :clock10: Token Usage Summary
+
+## :crystal_ball: AI-Based Data Extension Suggestions
+
+## :file_folder: Repo Structure
+
+## :floppy_disk: Installation
+
+## :computer: Examples
+
+##
