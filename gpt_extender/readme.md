@@ -11,7 +11,7 @@ The `gpt_extender` module is structured to facilitate easy data augmentation and
 
 These methods serve as the primary interface with the OpenAI API. They handle the execution of the language model queries and receive the output. Additionally, these methods are responsible for monitoring token usage via the internal method `_update_token_usage`, ensuring that you keep track of your API usage.
 
-## :spinear: Backbone Methods
+## :hammer_and_wrench: Backbone Methods
 
 ### `gpt_extend` & `chat_extend`
 
